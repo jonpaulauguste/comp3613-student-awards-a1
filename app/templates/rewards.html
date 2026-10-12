@@ -1,0 +1,131 @@
+{% extends "authenticated-base.html" %}
+{% block title %}Rewards Catalogue{% endblock %}
+
+{% block additional_styles %}
+<style>
+  .rewards-shell .points-pill {
+    color: var(--brand-ink);
+    background-color: color-mix(in srgb, var(--brand-accent) 14%, #fff);
+    border: 1px solid var(--brand-border);
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 0.45rem 0.8rem;
+  }
+
+  .rewards-card {
+    border: 1px solid var(--brand-border);
+  }
+
+  .reward-claim-btn {
+    color: #fff;
+    background: var(--brand-accent);
+    border: 1px solid var(--brand-accent);
+    border-radius: 0.45rem;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 0.4rem 0.8rem;
+    line-height: 1.2;
+  }
+
+  .reward-claim-btn:hover,
+  .reward-claim-btn:focus-visible {
+    background: color-mix(in srgb, var(--brand-accent) 86%, #000);
+    border-color: color-mix(in srgb, var(--brand-accent) 86%, #000);
+    color: #fff;
+    text-decoration: none;
+  }
+
+  .reward-claim-btn[disabled] {
+    color: var(--brand-muted);
+    background: color-mix(in srgb, var(--brand-muted) 16%, #fff);
+    border-color: color-mix(in srgb, var(--brand-muted) 22%, #fff);
+    text-decoration: none;
+    cursor: not-allowed;
+    opacity: 1;
+  }
+
+  .rewards-table-caption {
+    color: var(--brand-muted);
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+  }
+</style>
+{% endblock %}
+
+{% block subpage_content %}
+<section class="rewards-shell">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <h1 class="h4 mb-0">Rewards Catalogue</h1>
+    <span class="badge rounded-pill text-bg-light points-pill">{{ user.total_points }} pts</span>
+  </div>
+
+  <h2 class="h6 text-muted mb-3">Available Rewards</h2>
+
+  {% if award_catalogue %}
+  <div class="row g-3 mb-4">
+    {% for item in award_catalogue %}
+      {% set award = item.award %}
+      <div class="col-md-6">
+        <article class="card rewards-card h-100 shadow-sm">
+          <div class="card-body d-flex flex-column">
+            <h3 class="h5 mb-2">{{ award.name }}</h3>
+            <p class="mb-1 text-body-secondary">In Stock: {{ award.stock_quantity }}</p>
+            <p class="mb-3 text-body-secondary">Cost: {{ award.points_required }} pts</p>
+
+            <form method="post" action="{{ url_for('redeem_award_action', award_id=award.id) }}" class="mt-auto">
+              <button class="btn reward-claim-btn" type="submit" {% if not item.eligible %}disabled aria-disabled="true" title="{{ item.ineligible_reason }}"{% endif %}>
+                Claim <span class="visually-hidden">{{ award.name }}</span>
+              </button>
+              {% if not item.eligible %}
+                <p class="small text-danger mt-2 mb-0" aria-live="polite">{{ item.ineligible_reason }}</p>
+              {% endif %}
+            </form>
+          </div>
+        </article>
+      </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <p class="text-muted">No awards are configured yet.</p>
+  {% endif %}
+
+  <article class="card border-0 shadow-sm">
+    <div class="card-body">
+      <h2 class="h5 mb-3">Your Redemption Claims</h2>
+      {% if redemption_claims %}
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <caption class="rewards-table-caption">Your submitted reward claims and their latest statuses.</caption>
+          <thead>
+            <tr>
+              <th scope="col">Date</th>
+              <th scope="col">Award</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for claim in redemption_claims %}
+            {% set status = claim.status|lower %}
+            {% if status == "approved" %}
+              {% set status_badge_class = "text-bg-success" %}
+            {% elif status == "rejected" %}
+              {% set status_badge_class = "text-bg-danger" %}
+            {% else %}
+              {% set status_badge_class = "text-bg-secondary" %}
+            {% endif %}
+            <tr>
+              <td>{{ claim.claim_date }}</td>
+              <td>{{ award_name_lookup.get(claim.award_id, "Award #" ~ claim.award_id) }}</td>
+              <td><span class="badge {{ status_badge_class }}">{{ claim.status|capitalize }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-muted mb-0">No redemption claims submitted yet.</p>
+      {% endif %}
+    </div>
+  </article>
+</section>
+{% endblock %}

@@ -1,0 +1,43 @@
+{
+  "system": "Student Awards",
+  "actors": [
+    { "name": "Student", "side": "left" },
+    { "name": "Admin", "side": "right" }
+  ],
+  "use_cases": [
+    { "name": "Authenticate/Login", "actors": ["Student", "Admin"] },
+    {
+      "name": "Browse Available Awards",
+      "actors": ["Student"],
+      "includes": ["Authenticate/Login"]
+    },
+    {
+      "name": "Log Volunteer Hours",
+      "actors": ["Student"],
+      "includes": ["Authenticate/Login"]
+    },
+    {
+      "name": "Approve Volunteer Hours",
+      "actors": ["Admin"],
+      "includes": ["Authenticate/Login", "Review Submitted Hours"]
+    },
+    { "name": "Review Submitted Hours" },
+    {
+      "name": "Manage Award Catalog",
+      "actors": ["Admin"],
+      "includes": ["Authenticate/Login"]
+    },
+    {
+      "name": "Redeem Award",
+      "actors": ["Student"],
+      "includes": [
+        "Authenticate/Login",
+        "Browse Available Awards",
+        "Check Eligibility / Available Points"
+      ],
+      "extends": ["Insufficient Points Notice"]
+    },
+    { "name": "Check Eligibility / Available Points" },
+    { "name": "Insufficient Points Notice" }
+  ]
+}

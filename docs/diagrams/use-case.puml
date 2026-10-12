@@ -1,0 +1,46 @@
+@startuml
+!pragma layout smetana
+skinparam shadowing false
+skinparam actorBorderColor #1B365D
+skinparam actorFontColor #1E232D
+skinparam usecaseBackgroundColor #FFFFFF
+skinparam usecaseBorderColor #1B365D
+skinparam usecaseFontColor #1E232D
+skinparam rectangleBorderColor #1B365D
+skinparam rectangleBackgroundColor #F8FAFC
+skinparam arrowColor #1B365D
+
+actor "Student" as Student
+
+rectangle "Student Awards" {
+  usecase "Authenticate/Login" as Authenticate_Login
+  usecase "Browse Available Awards" as Browse_Available_Awards
+  usecase "Log Volunteer Hours" as Log_Volunteer_Hours
+  usecase "Approve Volunteer Hours" as Approve_Volunteer_Hours
+  usecase "Review Submitted Hours" as Review_Submitted_Hours
+  usecase "Manage Award Catalog" as Manage_Award_Catalog
+  usecase "Redeem Award" as Redeem_Award
+  usecase "Check Eligibility / Available Points" as Check_Eligibility_Available_Points
+  usecase "Insufficient Points Notice" as Insufficient_Points_Notice
+}
+
+actor "Admin" as Admin
+
+Student --> Authenticate_Login
+Authenticate_Login <-- Admin
+Student --> Browse_Available_Awards
+Browse_Available_Awards ..> Authenticate_Login : <<include>>
+Student --> Log_Volunteer_Hours
+Log_Volunteer_Hours ..> Authenticate_Login : <<include>>
+Approve_Volunteer_Hours <-- Admin
+Approve_Volunteer_Hours ..> Authenticate_Login : <<include>>
+Approve_Volunteer_Hours ..> Review_Submitted_Hours : <<include>>
+Manage_Award_Catalog <-- Admin
+Manage_Award_Catalog ..> Authenticate_Login : <<include>>
+Student --> Redeem_Award
+Redeem_Award ..> Authenticate_Login : <<include>>
+Redeem_Award ..> Browse_Available_Awards : <<include>>
+Redeem_Award ..> Check_Eligibility_Available_Points : <<include>>
+Redeem_Award ..> Insufficient_Points_Notice : <<extend>>
+
+@enduml

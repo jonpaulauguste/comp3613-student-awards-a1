@@ -1,3 +1,10 @@
+<!-- student-build:skill-integrity
+status: pass
+root: e84cd692d0b85eefe546385661958c27d07e8be6c5176a82012f68ccff5c8beb
+expected_root: e84cd692d0b85eefe546385661958c27d07e8be6c5176a82012f68ccff5c8beb
+mismatches: none
+-->
+
 # COMP 3613 Assignment 1
 
 Draft this file with the Guide. **Update it after every phase milestone** before you pause. The use-case diagram is a UML PNG at `docs/diagrams/use-case.png`, linked from this file as `diagrams/use-case.png` (path relative to `docs/report.md`). The model diagram is Mermaid. **Embed wireframe images** as `wireframes/<file>` (files live in `docs/wireframes/`).
@@ -189,7 +196,7 @@ Verify notes (student run) pending.
 
 Phase 6. Public Render URL (not localhost). Markers open this to mark the three workflows.
 
-https://
+[https://](https://faststarter-465m.onrender.com)
 
 ## Logins
 
@@ -198,16 +205,101 @@ Every account a marker needs, including extra users you added. Starter accounts:
 - bob / bobpass — regular user
 - admin / adminpass — admin
 
-## YouTube URL
+## YouTube URL 
+
+https://youtu.be/tCjwkwdwff4
 
 ## Session transcripts
 
-Filled when the Guide builds the report: the agent writes each Guide chat to `docs/transcripts/<slug>.md` (Copilot Agent, Cursor, or OpenCode). `python manage.py report` packages them. Do not paste chats here during the build.
+Filled when the Guide builds the report: the agent writes chat markdown into `docs/transcripts/`; `python manage.py report` packages them.
+
+Guide packaged **4** chat(s) in `docs/transcripts/` (and `docs/transcripts.zip`).
+
+Index: [docs/transcripts/INDEX.md](transcripts/INDEX.md)
+
+- [`phase-1-start-chat`](transcripts/phase-1-start-chat.md)
+- [`phase-2-use-case-chat`](transcripts/phase-2-use-case-chat.md)
+- [`phase-3-model-chat`](transcripts/phase-3-model-chat.md)
+- [`phase-4-5-build-polish-and-export`](transcripts/phase-4-5-build-polish-and-export.md)
 
 ## Competency (student-judge)
 
-Filled when the report is built. Guide runs student-judge, writes `docs/judge.md`, and export appends the scorecard here.
+Filled by Guide from the student-judge run when this report was built.
+
+**Judged at:** 2026-10-12T02:38:38Z  
+**Evidence pass:** re-read native chats + current [report.md](./report.md) + [docs/diagrams/](./diagrams/) + [docs/wireframes/](./wireframes/) + [docs/transcripts/](./transcripts/) (prior judge ignored)
+
+**Student / session:** COMP 3613 assignment session(s) in this workspace  
+**Artifact:** Native Copilot sessions + [docs/transcripts/](./transcripts/) markdown dump + [report.md](./report.md)  
+**Phases in evidence:** 1–6 (COMP 3613; Phase 5 includes polish, Phase 6 deploy)
+
+### Totals
+| | Count / value |
+|--|--|
+| Metrics on rubric | 12 (M1–M12) |
+| N/A (excluded) | 0 |
+| Metrics scored | 12 |
+| Scoreable max | 48 |
+| Awarded total | 37 / 48 |
+| **Overall (avg of scored)** | **3.08 / 4** |
+| Impression mark | 15 / 20 |
+
+## Scorecard
+
+| ID | Metric | Score / 4 | In avg | Evidence |
+|----|--------|----------:|:------:|----------|
+| M1 | Phase discipline | 3 | yes | Phase progression is present (Phase 4 → Phase 5 polish → Phase 6 deploy). Student explicitly requested polish before export (“**Yes please move on to phase 5 polishing**”). |
+| M2 | Problem framing | 3 | yes | Clear project/workflow framing captured in [report.md](./report.md) (`Student Awards`; 3 `Feature (user)` workflows). |
+| M3 | Decision ownership | 3 | yes | Student-directed milestones and corrections are evident in turns (“**embed the wireframes in the report**”, “**start phase 5**”, “**Yes please move on to phase 5 polishing**”). |
+| M4 | Artefact-before-code | 3 | yes | Wireframes are embedded with coverage blocks in [report.md](./report.md) before implementation sections; implementation notes map to ERD/wireframes. |
+| M5 | Verification habit | 3 | yes | Verification/polish loop is present (student feedback drove UI/nav fixes); report includes verification notes for admin polish, though one line still states rewards verify pending. |
+| M6 | Assignment fit | 3 | yes | FastStarter-style layered implementation is documented (`models/repositories/services/thin routes`) and architecture break checks found no inline SQL in current router files. |
+| M7 | Slice explanation | 2 | yes | Student’s own explanatory depth is limited in retrievable transcripts (mostly short directives). Quote evidence is mostly terse steering, e.g. “**1**” and “**Yes please move on to phase 5 polishing**”, with little direct layer reasoning in student text. |
+| M8 | Prompt quality | 3 | yes | Prompts are concise and phase-aligned (“start phase 5”, “embed the wireframes…”, export request). |
+| M9 | Response to pushback | 3 | yes | Student accepted iterative refinement and asked to continue polishing rather than stopping at first pass. |
+| M10 | Integrity | 4 | yes | No laundering markers or skill tampering found. [report.md](./report.md) includes `student-build:skill-integrity` with “**status: pass**” and matching roots. |
+| M11 | Provenance continuity | 3 | yes | Work stays aligned with declared project/workflows/artefacts in [report.md](./report.md); transcripts and code changes remain on that path. |
+| M12 | Sincerity trajectory | 4 | yes | No sincerity-spiral blocks found in available evidence; no abandonment or escalation pattern present. |
+
+## Strengths
+- Strong phase continuity through build → polish → deploy request sequence.
+- Good artefact discipline in [report.md](./report.md): use-case image, ERD, wireframe embeds, implementation and polish notes.
+- Clear polish engagement (student requested/accepted iterative UI and workflow refinement rather than ending at first build).
+- Integrity signals are clean (`skill-integrity` pass, no suspicious transcript patterns).
+
+## Gaps (priority order)
+1. Student-owned technical explanation depth is light in retrievable chat evidence (especially layer rationale in their own words), which holds M7 below high-band.
+2. Verification evidence is good but not uniformly explicit for every workflow in the report text (one “verify pending” note remains), limiting M5 from 4.
+
+## Phase gate status
+| Phase | Status | Note |
+|-------|--------|------|
+| 1 | met | Project and three workflows are recorded in [report.md](./report.md). |
+| 2 | met | Use-case diagram and assumptions are present in [report.md](./report.md) and [use-case.png](./diagrams/use-case.png). |
+| 3 | met | ERD and relationship notes are present in [report.md](./report.md). |
+| 4 | met | Wireframes are embedded with coverage blocks in [report.md](./report.md). |
+| 5 | met | Theme/build/polish are all documented; student explicitly requested additional polish. |
+| 6 | met | Public URL and marker logins are present in [report.md](./report.md). |
+
+## Recommended next practice
+- In your next project, add one short “why this layer” note per workflow (model/service/route) in your own words right after implementation to raise M7 from solid to high.
+
+## Integrity note
+- Clean.
+
+## Provenance flags
+- None.
+
+## Sincerity log summary
+- Blocks found: 0 | max round: 0 | min/mean/final confidence: N/A | trend: N/A | cleared: yes (no suspicion invoked)
+
+## Skips
+- Skips: 0/3 used (no explicit skip usage found in available evidence).
 
 ## Skill integrity
 
-Filled by `python manage.py report`. Do not edit the course skills.
+Course skills are hashed at export and compared to `.agents/skills.lock.json`. Do not edit `.agents/skills/`, `.cursor/skills/`, or `AGENTS.md`.
+
+- Status: **pass**
+- Root: `e84cd692d0b85eefe546385661958c27d07e8be6c5176a82012f68ccff5c8beb`
+- none

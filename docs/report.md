@@ -196,7 +196,7 @@ Verify notes (student run) pending.
 
 Phase 6. Public Render URL (not localhost). Markers open this to mark the three workflows.
 
-[https://](https://faststarter-465m.onrender.com)
+[https://faststarter-465m.onrender.com](https://faststarter-465m.onrender.com)
 
 ## Logins
 
@@ -207,7 +207,7 @@ Every account a marker needs, including extra users you added. Starter accounts:
 
 ## YouTube URL 
 
-https://youtu.be/tCjwkwdwff4
+https://youtu.be/L9TUMekhEeo
 
 ## Session transcripts
 

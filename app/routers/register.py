@@ -16,7 +16,7 @@ async def register_view(request: Request):
     )
 
 # Action route (performs an action)
-@router.post('/register', response_class=HTMLResponse, status_code=status.HTTP_201_CREATED)
+@router.post('/register', response_class=HTMLResponse)
 def signup_user(request:Request, db:SessionDep, 
     username: str = Form(),
     email: str = Form(),
@@ -28,6 +28,11 @@ def signup_user(request:Request, db:SessionDep,
         user = auth_service.register_user(username, email, password)
         flash(request, "Registration completed! Sign in now!")
         return RedirectResponse(url=request.url_for("login_view"), status_code=status.HTTP_303_SEE_OTHER)
-    except Exception as e:
-        flash(request, "Username or email already exists", "danger")
+    except ValueError as e:
+        # Covers duplicate username/email (ConflictError), short password and bad email.
+        message = str(e) if not hasattr(e, "errors") else "Please enter a valid email address."
+        flash(request, message, "danger")
+        return RedirectResponse(url=request.url_for("register_view"), status_code=status.HTTP_303_SEE_OTHER)
+    except Exception:
+        flash(request, "Registration failed. Please try again.", "danger")
         return RedirectResponse(url=request.url_for("register_view"), status_code=status.HTTP_303_SEE_OTHER)

@@ -58,8 +58,8 @@
 
             <div class="col-lg-6 bg-white">
                 <div class="right-section d-flex flex-column justify-content-center h-100">
-                    <h1 class="display-5 fw-bold text-danger mb-3">401</h1>
-                    <h3 class="fw-semibold mb-3">Unauthorized</h3>
+                    <h1 class="display-5 fw-bold text-danger mb-3">{{ code|default(401) }}</h1>
+                    <h3 class="fw-semibold mb-3">{{ heading|default("Unauthorized") }}</h3>
                     <p class="text-muted mb-4">
                         Your session has expired or you do not have permission to access this page.
                         Please log in again to continue.

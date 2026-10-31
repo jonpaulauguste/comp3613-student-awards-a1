@@ -9,6 +9,7 @@ From the project root (venv active, deps installed; ``.env`` optional — falls 
     python manage.py report --name "Student Name" --id "816000000"
     python manage.py usecase
     python manage.py skills-verify
+    python manage.py test [unit|integration|all] [-v]
 """
 
 from __future__ import annotations
@@ -241,6 +242,21 @@ def cmd_users(args: argparse.Namespace) -> None:
             )
 
 
+def cmd_test(args: argparse.Namespace) -> None:
+    """Run the pytest suites: unit, integration, or all."""
+    import pytest
+
+    targets = {
+        "unit": ["tests/unit"],
+        "integration": ["tests/integration"],
+        "all": ["tests"],
+    }[args.suite]
+    pytest_args = [*targets, "-v" if args.verbose else "-q", "-rA" if args.verbose else "-ra"]
+    if args.k:
+        pytest_args += ["-k", args.k]
+    raise SystemExit(pytest.main(pytest_args))
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="python manage.py",
@@ -283,6 +299,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-reload", dest="reload", action="store_false", help="Disable auto-reload"
     )
     p_run.set_defaults(func=cmd_run, reload=None)
+
+    p_test = sub.add_parser("test", help="Run tests: unit, integration or all (default)")
+    p_test.add_argument("suite", nargs="?", default="all", choices=["unit", "integration", "all"])
+    p_test.add_argument("-k", default=None, help="Only run tests matching this pytest expression")
+    p_test.add_argument("-v", "--verbose", action="store_true", help="List every test")
+    p_test.set_defaults(func=cmd_test)
 
     p_users = sub.add_parser("users", help="List users in the database")
     p_users.set_defaults(func=cmd_users)

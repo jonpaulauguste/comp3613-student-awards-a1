@@ -41,6 +41,9 @@ class UserRepository:
     def get_by_username(self, username: str) -> Optional[User]:
         return self.db.exec(select(User).where(User.username == username)).one_or_none()
 
+    def get_by_email(self, email: str) -> Optional[User]:
+        return self.db.exec(select(User).where(User.email == email)).one_or_none()
+
     def get_by_id(self, user_id: int) -> Optional[User]:
         return self.db.get(User, user_id)
 
@@ -78,24 +81,19 @@ class UserRepository:
             self.db.rollback()
             raise
 
-    def add_points(self, user_id: int, points: int) -> User:
+    def add_points(self, user_id: int, points: int, *, commit: bool = True) -> User:
+        """Credit points. With ``commit=False`` the caller commits (one transaction)."""
         if points <= 0:
             raise ValueError("Points must be greater than zero.")
         user = self.db.get(User, user_id)
         if not user:
             raise ValueError("User doesn't exist")
-        try:
-            user.total_points += points
-            self.db.add(user)
-            self.db.commit()
-            self.db.refresh(user)
-            return user
-        except Exception as e:
-            logger.error(f"An error occurred while adding points to user: {e}")
-            self.db.rollback()
-            raise
+        user.total_points += points
+        self.db.add(user)
+        return self._finish(user, commit, "adding points to user")
 
-    def deduct_points(self, user_id: int, points: int) -> User:
+    def deduct_points(self, user_id: int, points: int, *, commit: bool = True) -> User:
+        """Debit points. With ``commit=False`` the caller commits (one transaction)."""
         if points <= 0:
             raise ValueError("Points must be greater than zero.")
         user = self.db.get(User, user_id)
@@ -103,13 +101,18 @@ class UserRepository:
             raise ValueError("User doesn't exist")
         if user.total_points < points:
             raise ValueError("Not enough points to redeem this award.")
+        user.total_points -= points
+        self.db.add(user)
+        return self._finish(user, commit, "deducting points from user")
+
+    def _finish(self, user: User, commit: bool, action: str) -> User:
+        if not commit:
+            return user
         try:
-            user.total_points -= points
-            self.db.add(user)
             self.db.commit()
             self.db.refresh(user)
             return user
         except Exception as e:
-            logger.error(f"An error occurred while deducting points from user: {e}")
+            logger.error(f"An error occurred while {action}: {e}")
             self.db.rollback()
             raise

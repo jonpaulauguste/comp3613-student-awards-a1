@@ -20,6 +20,7 @@ async def admin_home_view(
     user_repo = UserRepository(db)
     volunteer_service = VolunteerSessionService(volunteer_repo, user_repo)
     pending_sessions = volunteer_service.get_pending_sessions()
+    student_names = {u.id: u.username for u in user_repo.get_all_users()}
 
     return templates.TemplateResponse(
         request=request,
@@ -27,6 +28,7 @@ async def admin_home_view(
         context={
             "user": user,
             "pending_sessions": pending_sessions,
+            "student_names": student_names,
         },
     )
 
@@ -48,6 +50,30 @@ async def approve_volunteer_hours_action(
         flash(request, str(exc), "danger")
     except Exception:
         flash(request, "Unable to approve volunteer session right now.", "danger")
+
+    return RedirectResponse(
+        url=request.url_for("admin_home_view"),
+        status_code=status.HTTP_303_SEE_OTHER,
+    )
+
+
+@router.post("/admin/volunteer-sessions/{session_id}/reject", response_class=HTMLResponse)
+async def reject_volunteer_hours_action(
+    session_id: int,
+    request: Request,
+    user: AdminDep,
+    db: SessionDep,
+):
+    volunteer_repo = VolunteerSessionRepository(db)
+    user_repo = UserRepository(db)
+    volunteer_service = VolunteerSessionService(volunteer_repo, user_repo)
+    try:
+        volunteer_service.reject_session(volunteer_session_id=session_id)
+        flash(request, "Volunteer session rejected. No points were awarded.", "warning")
+    except ValueError as exc:
+        flash(request, str(exc), "danger")
+    except Exception:
+        flash(request, "Unable to reject volunteer session right now.", "danger")
 
     return RedirectResponse(
         url=request.url_for("admin_home_view"),

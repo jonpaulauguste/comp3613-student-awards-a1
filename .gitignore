@@ -206,3 +206,7 @@ docs/transcripts.zip
 
 # Node (mermaid-cli). package.json + package-lock.json are committed.
 node_modules/
+# Test runs
+.pytest_unused.db
+.pytest_cache/
+postman/newman/

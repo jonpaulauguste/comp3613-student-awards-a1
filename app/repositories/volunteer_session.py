@@ -44,20 +44,29 @@ class VolunteerSessionRepository:
             .where(VolunteerSession.student_id == student_id)
             .order_by(VolunteerSession.date.desc(), VolunteerSession.id.desc())
         )
-        return self.db.exec(query).all()
+        return list(self.db.exec(query).all())
 
     def list_pending(self) -> list[VolunteerSession]:
-        query = (
-            select(VolunteerSession)
-            .where(VolunteerSession.status == "pending")
-            .order_by(VolunteerSession.date.asc(), VolunteerSession.id.asc())
-        )
-        return self.db.exec(query).all()
+        return self.list_by_status("pending")
+
+    def list_by_status(self, status: Optional[str] = None) -> list[VolunteerSession]:
+        query = select(VolunteerSession)
+        if status:
+            query = query.where(VolunteerSession.status == status)
+        query = query.order_by(VolunteerSession.date.asc(), VolunteerSession.id.asc())
+        return list(self.db.exec(query).all())
 
     def get_by_id(self, volunteer_session_id: int) -> Optional[VolunteerSession]:
         return self.db.get(VolunteerSession, volunteer_session_id)
 
-    def save(self, volunteer_session: VolunteerSession) -> VolunteerSession:
+    def save(
+        self, volunteer_session: VolunteerSession, *, commit: bool = True
+    ) -> VolunteerSession:
+        """Persist changes. Pending changes on other rows in this DB session
+        (e.g. a user's points) are committed in the same transaction."""
+        if not commit:
+            self.db.add(volunteer_session)
+            return volunteer_session
         try:
             self.db.add(volunteer_session)
             self.db.commit()

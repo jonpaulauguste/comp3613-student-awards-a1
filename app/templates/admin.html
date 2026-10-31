@@ -21,14 +21,19 @@
           <tbody>
             {% for session in pending_sessions %}
             <tr>
-              <td>{{ session.student_id }}</td>
+              <td>{{ student_names.get(session.student_id, 'Student #' ~ session.student_id) }}</td>
               <td>{{ session.date }}</td>
               <td>{{ session.description }}</td>
               <td>{{ "%.1f"|format(session.hours_logged) }}</td>
               <td>
-                <form method="post" action="{{ url_for('approve_volunteer_hours_action', session_id=session.id) }}">
-                  <button class="btn btn-sm btn-success" type="submit">Approve + Award Points</button>
-                </form>
+                <div class="d-flex gap-2">
+                  <form method="post" action="{{ url_for('approve_volunteer_hours_action', session_id=session.id) }}">
+                    <button class="btn btn-sm btn-success" type="submit">Approve + Award Points</button>
+                  </form>
+                  <form method="post" action="{{ url_for('reject_volunteer_hours_action', session_id=session.id) }}">
+                    <button class="btn btn-sm btn-outline-danger" type="submit">Reject</button>
+                  </form>
+                </div>
               </td>
             </tr>
             {% endfor %}

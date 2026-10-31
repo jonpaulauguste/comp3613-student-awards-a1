@@ -152,6 +152,33 @@ The app binds `0.0.0.0` and reads `PORT` when Render sets it. Locally it uses `A
 
 ---
 
+## Testing (Assignment 2)
+
+Test plans (unit, integration, API and UAT) are in [docs/test-plan.md](docs/test-plan.md).
+
+```bash
+python manage.py test               # unit + integration
+python manage.py test unit          # tests/unit: services with mocked repositories
+python manage.py test integration   # tests/integration: full app on in-memory SQLite
+python manage.py test unit -v       # list every test
+```
+
+Tests never touch your real database; each integration test gets a fresh in-memory one.
+
+### API tests (Postman)
+
+1. Start the app (`python manage.py init` then `python manage.py run`) or use the Render URL.
+2. In Postman, **Import** `postman/student-awards.postman_collection.json` and one environment from `postman/` (`local` or `render`).
+3. Run the whole collection with the **Collection Runner**, in order.
+
+Or from the command line with Newman:
+
+```bash
+npx newman run postman/student-awards.postman_collection.json -e postman/local.postman_environment.json
+```
+
+The collection registers a new student on each run and needs the seeded `admin / adminpass` account.
+
 ## Deploy (Render MCP)
 
 **Phase 6** — only after Phase 5 polish (named workflows work locally and you have steered UI/workflow/model refinements). Deploy a **Postgres database** and the **web app** on Render’s free plan. Agents talk to Render through the [Render MCP server](https://render.com/docs/mcp-server) (`https://mcp.render.com/mcp`). This repo already ships the MCP config for each supported agent — do **not** paste an API key into a committed file. Do not put the **database** password in the report or the video. **App** usernames and passwords belong in `docs/report.md`.

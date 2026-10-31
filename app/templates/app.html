@@ -49,7 +49,7 @@
             </div>
             <div class="col-md-3">
               <label class="form-label" for="hours_logged">Hours</label>
-              <input id="hours_logged" class="form-control" name="hours_logged" type="number" min="0.5" step="0.5" required>
+              <input id="hours_logged" class="form-control" name="hours_logged" type="number" min="0.5" max="24" step="0.5" required>
             </div>
             <div class="col-md-3">
               <label class="form-label" for="session_date">Date</label>
@@ -86,7 +86,7 @@
               <td>{{ session.description }}</td>
               <td>{{ "%.1f"|format(session.hours_logged) }}</td>
               <td>
-                <span class="badge {{ 'text-bg-secondary' if session.status == 'pending' else 'text-bg-success' }}">
+                <span class="badge {{ {'approved': 'text-bg-success', 'rejected': 'text-bg-danger'}.get(session.status, 'text-bg-secondary') }}">
                   {{ session.status|capitalize }}
                 </span>
               </td>

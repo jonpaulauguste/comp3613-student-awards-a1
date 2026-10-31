@@ -2,13 +2,15 @@ import logging
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, HTTPException, Request, status
+from fastapi.responses import JSONResponse
 from starlette.middleware import Middleware
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.responses import RedirectResponse
 
 from app.config import get_settings
 from app.routers import api_router, router, static_files, templates
+from app.services.errors import DomainError
 
 logger = logging.getLogger(__name__)
 
@@ -59,12 +61,39 @@ async def health():
     return {"ok": True}
 
 
-@app.exception_handler(status.HTTP_401_UNAUTHORIZED)
-async def unauthorized_redirect_handler(request: Request, exc: Exception):
+def _is_api_request(request: Request) -> bool:
+    return request.url.path.startswith("/api")
+
+
+def _auth_error_response(request: Request, exc: HTTPException, heading: str):
+    # API clients get JSON with the real status; browsers get the HTML page.
+    if _is_api_request(request):
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"detail": exc.detail},
+            headers=getattr(exc, "headers", None),
+        )
     return templates.TemplateResponse(
         request=request,
         name="401.html",
+        context={"code": exc.status_code, "heading": heading},
+        status_code=exc.status_code,
     )
+
+
+@app.exception_handler(status.HTTP_401_UNAUTHORIZED)
+async def unauthorized_handler(request: Request, exc: HTTPException):
+    return _auth_error_response(request, exc, "Unauthorized")
+
+
+@app.exception_handler(status.HTTP_403_FORBIDDEN)
+async def forbidden_handler(request: Request, exc: HTTPException):
+    return _auth_error_response(request, exc, "Forbidden")
+
+
+@app.exception_handler(DomainError)
+async def domain_error_handler(request: Request, exc: DomainError):
+    return JSONResponse(status_code=exc.status_code, content={"detail": str(exc)})
 
 
 if __name__ == "__main__":

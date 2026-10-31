@@ -1,8 +1,7 @@
 """Unit tests: RewardRedemptionService with mocked repositories (no database)."""
 
+import unittest
 from unittest.mock import MagicMock
-
-import pytest
 
 from app.models.award import Award
 from app.models.user import User
@@ -40,96 +39,84 @@ def new_award(points_required=40, stock=5, award_id=3):
     )
 
 
-def test_redeem_award():
-    service, user_repo, award_repo, claim_repo = make_service()
-    user_repo.get_by_id.return_value = new_student(points=100)
-    award = new_award(points_required=40, stock=5)
-    award_repo.get_by_id.return_value = award
+class RewardRedemptionServiceUnitTests(unittest.TestCase):
 
-    claim = service.redeem_award(student_id=7, award_id=3)
+    def setUp(self):
+        self.service, self.user_repo, self.award_repo, self.claim_repo = make_service()
 
-    user_repo.deduct_points.assert_called_once_with(7, 40, commit=False)
-    assert award.stock_quantity == 4
-    award_repo.save.assert_called_once_with(award, commit=False)
-    assert claim.student_id == 7
-    assert claim.award_id == 3
-    assert claim.status == "submitted"
+    def test_redeem_award(self):
+        self.user_repo.get_by_id.return_value = new_student(points=100)
+        award = new_award(points_required=40, stock=5)
+        self.award_repo.get_by_id.return_value = award
 
+        claim = self.service.redeem_award(student_id=7, award_id=3)
 
-def test_redeem_award_exact_points():
-    service, user_repo, award_repo, claim_repo = make_service()
-    user_repo.get_by_id.return_value = new_student(points=40)
-    award_repo.get_by_id.return_value = new_award(points_required=40)
-    service.redeem_award(student_id=7, award_id=3)
-    user_repo.deduct_points.assert_called_once()
+        self.user_repo.deduct_points.assert_called_once_with(7, 40, commit=False)
+        self.assertEqual(award.stock_quantity, 4)
+        self.award_repo.save.assert_called_once_with(award, commit=False)
+        self.assertEqual(claim.student_id, 7)
+        self.assertEqual(claim.award_id, 3)
+        self.assertEqual(claim.status, "submitted")
 
+    def test_redeem_award_exact_points(self):
+        self.user_repo.get_by_id.return_value = new_student(points=40)
+        self.award_repo.get_by_id.return_value = new_award(points_required=40)
+        self.service.redeem_award(student_id=7, award_id=3)
+        self.user_repo.deduct_points.assert_called_once()
 
-def test_redeem_award_not_enough_points():
-    service, user_repo, award_repo, claim_repo = make_service()
-    user_repo.get_by_id.return_value = new_student(points=10)
-    award = new_award(points_required=40, stock=5)
-    award_repo.get_by_id.return_value = award
+    def test_redeem_award_not_enough_points(self):
+        self.user_repo.get_by_id.return_value = new_student(points=10)
+        award = new_award(points_required=40, stock=5)
+        self.award_repo.get_by_id.return_value = award
 
-    with pytest.raises(InvalidInputError) as error:
-        service.redeem_award(student_id=7, award_id=3)
+        with self.assertRaises(InvalidInputError) as error:
+            self.service.redeem_award(student_id=7, award_id=3)
 
-    assert "30 more point" in str(error.value)
-    user_repo.deduct_points.assert_not_called()
-    claim_repo.create.assert_not_called()
-    assert award.stock_quantity == 5
+        self.assertIn("30 more point", str(error.exception))
+        self.user_repo.deduct_points.assert_not_called()
+        self.claim_repo.create.assert_not_called()
+        self.assertEqual(award.stock_quantity, 5)
 
+    def test_redeem_award_out_of_stock(self):
+        self.user_repo.get_by_id.return_value = new_student(points=500)
+        self.award_repo.get_by_id.return_value = new_award(stock=0)
+        with self.assertRaises(ConflictError):
+            self.service.redeem_award(student_id=7, award_id=3)
+        self.claim_repo.create.assert_not_called()
 
-def test_redeem_award_out_of_stock():
-    service, user_repo, award_repo, claim_repo = make_service()
-    user_repo.get_by_id.return_value = new_student(points=500)
-    award_repo.get_by_id.return_value = new_award(stock=0)
-    with pytest.raises(ConflictError):
-        service.redeem_award(student_id=7, award_id=3)
-    claim_repo.create.assert_not_called()
+    def test_redeem_award_missing_award(self):
+        self.user_repo.get_by_id.return_value = new_student()
+        self.award_repo.get_by_id.return_value = None
+        with self.assertRaises(NotFoundError):
+            self.service.redeem_award(student_id=7, award_id=99)
 
+    def test_redeem_award_missing_student(self):
+        self.user_repo.get_by_id.return_value = None
+        with self.assertRaises(NotFoundError):
+            self.service.redeem_award(student_id=99, award_id=3)
 
-def test_redeem_award_missing_award():
-    service, user_repo, award_repo, claim_repo = make_service()
-    user_repo.get_by_id.return_value = new_student()
-    award_repo.get_by_id.return_value = None
-    with pytest.raises(NotFoundError):
-        service.redeem_award(student_id=7, award_id=99)
+    def test_catalog_eligibility(self):
+        self.user_repo.get_by_id.return_value = new_student(points=50)
+        self.award_repo.list_all.return_value = [
+            new_award(points_required=15, award_id=1),
+            new_award(points_required=60, award_id=2),
+            new_award(points_required=10, stock=0, award_id=3),
+        ]
 
+        catalog = self.service.list_catalog_for_student(7)
 
-def test_redeem_award_missing_student():
-    service, user_repo, award_repo, claim_repo = make_service()
-    user_repo.get_by_id.return_value = None
-    with pytest.raises(NotFoundError):
-        service.redeem_award(student_id=99, award_id=3)
+        self.assertTrue(catalog[0]["eligible"])
+        self.assertFalse(catalog[1]["eligible"])
+        self.assertEqual(catalog[1]["ineligible_reason"], "You need 10 more point(s).")
+        self.assertFalse(catalog[2]["eligible"])
+        self.assertEqual(catalog[2]["ineligible_reason"], "Out of stock.")
 
+    def test_list_claims_for_student(self):
+        self.service.list_claims_for(new_student())
+        self.claim_repo.list_for_student.assert_called_once_with(7)
+        self.claim_repo.list_all.assert_not_called()
 
-def test_catalog_eligibility():
-    service, user_repo, award_repo, claim_repo = make_service()
-    user_repo.get_by_id.return_value = new_student(points=50)
-    award_repo.list_all.return_value = [
-        new_award(points_required=15, award_id=1),
-        new_award(points_required=60, award_id=2),
-        new_award(points_required=10, stock=0, award_id=3),
-    ]
-
-    catalog = service.list_catalog_for_student(7)
-
-    assert catalog[0]["eligible"] is True
-    assert catalog[1]["eligible"] is False
-    assert catalog[1]["ineligible_reason"] == "You need 10 more point(s)."
-    assert catalog[2]["eligible"] is False
-    assert catalog[2]["ineligible_reason"] == "Out of stock."
-
-
-def test_list_claims_for_student():
-    service, user_repo, award_repo, claim_repo = make_service()
-    service.list_claims_for(new_student())
-    claim_repo.list_for_student.assert_called_once_with(7)
-    claim_repo.list_all.assert_not_called()
-
-
-def test_list_claims_for_admin():
-    service, user_repo, award_repo, claim_repo = make_service()
-    service.list_claims_for(new_student(role="admin"))
-    claim_repo.list_all.assert_called_once()
-    claim_repo.list_for_student.assert_not_called()
+    def test_list_claims_for_admin(self):
+        self.service.list_claims_for(new_student(role="admin"))
+        self.claim_repo.list_all.assert_called_once()
+        self.claim_repo.list_for_student.assert_not_called()
